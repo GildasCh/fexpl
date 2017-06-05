@@ -14,38 +14,43 @@ type DummyReader struct {
 	counter int
 }
 
-func (dr *DummyReader) Read(p []byte) (n int, err error) {
-	n = rand.Intn(len(p))
+func (dr *DummyReader) Read(p []byte) (int, error) {
+	n := rand.Intn(len(p))
 
 	for i := 0; i < n; i++ {
 		if dr.counter >= len(dr.b) {
-			return 0, errors.New("End of array")
+			return i, errors.New("End of array")
 		}
 
 		p[i] = dr.b[dr.counter]
 		dr.counter++
 	}
 
-	return
+	return n, nil
 }
 
 func TestKeepHeaders(t *testing.T) {
-	dr := &DummyReader{b: randomArray(2 * headersSize)}
+	rand.Seed(time.Now().UTC().UnixNano())
+	in := randomArray(rand.Intn(10 * headersSize))
+	var out []byte
+	dr := &DummyReader{b: in}
 	kh := &KeepHeaders{r: dr}
 
 	var err error
 	for err == nil {
 		p := make([]byte, headersSize)
-		_, err = kh.Read(p)
+		var n int
+		n, err = kh.Read(p)
+		out = append(out, p[:n]...)
 	}
 
 	assert.Equal(t, headersSize, kh.read)
-	assert.Equal(t, dr.b[:headersSize], kh.headers[:])
+	assert.Equal(t, in, out)
+	assert.Equal(t, in[:headersSize], kh.headers[:])
 }
 
 func randomArray(n int) []byte {
 	ret := make([]byte, n)
-	rand.Seed(time.Now().UTC().UnixNano())
 	rand.Read(ret)
 	return ret
 }
