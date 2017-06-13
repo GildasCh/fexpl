@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	filetype "gopkg.in/h2non/filetype.v1"
@@ -27,13 +26,17 @@ type FileCollection struct {
 
 func Explore(name, root string) FileCollection {
 	ret := FileCollection{}
+	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
 		file, _ := os.Open(path)
 		kh := &KeepHeaders{r: file}
 		hash := fcomp.Hash(kh)
 		ft, _ := filetype.Get(kh.headers[:])
 		ret.Files = append(ret.Files, File{
-			Name:     strings.TrimPrefix(path, root),
+			Name:     path,
 			Hash:     hash,
 			Size:     info.Size(),
 			Modified: info.ModTime(),
