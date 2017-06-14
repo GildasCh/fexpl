@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"encoding/gob"
 	"fmt"
 	"os"
 )
@@ -26,14 +26,19 @@ func usage() {
 }
 
 func scan() {
-	if len(os.Args) < 4 {
+	if len(os.Args) < 5 {
 		usage()
 		return
 	}
 
 	fc := Explore(os.Args[2], os.Args[3])
 
-	jfc, _ := json.Marshal(fc)
+	fout, _ := os.Create(os.Args[4])
 
-	fmt.Println(string(jfc))
+	enc := gob.NewEncoder(fout)
+	enc.Encode(fc)
+
+	// jfc, _ := json.Marshal(fc)
+
+	// fmt.Println(string(jfc))
 }
