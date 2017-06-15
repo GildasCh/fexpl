@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
@@ -24,8 +25,8 @@ type FileCollection struct {
 	Name  string
 }
 
-func Explore(name, root string) FileCollection {
-	ret := FileCollection{}
+func Explore(name, root string) *FileCollection {
+	ret := &FileCollection{}
 	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -46,4 +47,24 @@ func Explore(name, root string) FileCollection {
 	})
 
 	return ret
+}
+
+func (fc *FileCollection) ExportToJSON(output string) error {
+	f, err := os.Create(output)
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(f).Encode(fc)
+}
+
+func ImportFromJSON(output string) (*FileCollection, error) {
+	f, err := os.Open(output)
+	if err != nil {
+		return nil, err
+	}
+
+	var fc FileCollection
+	err = json.NewDecoder(f).Decode(&fc)
+	return &fc, err
 }
