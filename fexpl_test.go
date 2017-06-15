@@ -6,8 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var fc *FileCollection
+
 func TestExplore(t *testing.T) {
-	fc := Explore("dummy name", "data")
+	if fc == nil {
+		fc = Explore("dummy name", "data")
+	}
 
 	assert.Equal(t, "dummy name", fc.Name)
 	assert.Equal(t, 15, len(fc.Files))
@@ -24,4 +28,17 @@ func TestExplore(t *testing.T) {
 	}
 
 	assert.Equal(t, h1, h2)
+}
+
+func TestExportAndImport(t *testing.T) {
+	if fc == nil {
+		fc = Explore("dummy name", "data")
+	}
+
+	err := fc.ExportToJSON("dummy.json")
+	assert.NoError(t, err)
+	fc2, err := ImportFromJSON("dummy.json")
+	assert.NoError(t, err)
+
+	assert.Equal(t, fc, fc2)
 }
