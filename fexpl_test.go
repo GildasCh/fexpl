@@ -40,5 +40,13 @@ func TestExportAndImport(t *testing.T) {
 	fc2, err := ImportFromJSON("dummy.json")
 	assert.NoError(t, err)
 
+	// fix bug on time.Time.loc
+	for i := range fc.Files {
+		fc.Files[i].Modified = fc.Files[i].Modified.UTC()
+	}
+	for i := range fc2.Files {
+		fc2.Files[i].Modified = fc2.Files[i].Modified.UTC()
+	}
+
 	assert.Equal(t, fc, fc2)
 }
