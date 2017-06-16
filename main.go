@@ -75,7 +75,10 @@ func ls() {
 
 func serve() {
 	for _, root := range os.Args[2:] {
-		fileCollections = append(fileCollections, Explore("", root))
+		fc := Explore("", root)
+		if fc != nil {
+			fileCollections = append(fileCollections, fc)
+		}
 	}
 
 	r := mux.NewRouter()
