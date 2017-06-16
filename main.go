@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"text/tabwriter"
+
+	"github.com/gorilla/mux"
 )
+
+var fileCollections []*FileCollection
 
 func main() {
 	if len(os.Args) < 2 {
@@ -17,6 +23,8 @@ func main() {
 		scan()
 	case "ls":
 		ls()
+	case "serve":
+		serve()
 	default:
 		usage()
 	}
@@ -63,4 +71,32 @@ func ls() {
 		fmt.Fprintf(w, "%s\t%s\n", f.Name, kind)
 	}
 	w.Flush()
+}
+
+func serve() {
+	for _, root := range os.Args[2:] {
+		fileCollections = append(fileCollections, Explore("", root))
+	}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", indexHandler).Methods("GET")
+
+	http.Handle("/", r)
+	port := "8080"
+	fmt.Printf("Listening on %s...\n", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.New("index.html").ParseFiles("html/index.html")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = t.Execute(w, fileCollections)
+	if err != nil {
+		fmt.Println(err)
+	}
 }

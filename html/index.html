@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>fexpl</title>
+	<meta charset="utf-8" />
+  </head>
+  <body>
+    {{ range $fc := . }}
+    <h2>{{ $fc.Name }}</h2>
+
+    <ul>
+      {{ range $f := $fc.Files }}
+      <li>
+        {{ $f.Name }}, {{ $f.Size }}, {{ $f.Header.MIME.Value }}
+      </li>
+      {{ end }}
+    </ul>
+    {{ end }}
+  </body>
+</html>

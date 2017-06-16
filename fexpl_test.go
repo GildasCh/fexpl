@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +30,34 @@ func TestExplore(t *testing.T) {
 	}
 
 	assert.Equal(t, h1, h2)
+}
+
+func TestExploreDataExists(t *testing.T) {
+	if fc == nil {
+		fc = Explore("dummy name", "data")
+	}
+
+	fc.ExportToJSON("data/fexpl.json")
+	defer func() {
+		err := os.Remove("data/fexpl.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	fc2 := Explore("", "data")
+	for i := range fc.Files {
+		fc.Files[i].Modified = fc.Files[i].Modified.UTC()
+	}
+	for i := range fc2.Files {
+		fc2.Files[i].Modified = fc2.Files[i].Modified.UTC()
+	}
+	assert.Equal(t, fc, fc2)
+}
+
+func TestExploreErrorOnNoNameAndNoData(t *testing.T) {
+	fc2 := Explore("", "data")
+	assert.EqualValues(t, (*FileCollection)(nil), fc2)
 }
 
 func TestExportAndImport(t *testing.T) {

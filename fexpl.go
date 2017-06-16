@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -26,6 +27,19 @@ type FileCollection struct {
 }
 
 func Explore(name, root string) *FileCollection {
+	if _, err := os.Stat(filepath.Join(root, "fexpl.json")); err == nil {
+		// File exists
+		ret, err := ImportFromJSON(filepath.Join(root, "fexpl.json"))
+		if err == nil {
+			return ret
+		}
+		fmt.Println(err)
+	}
+
+	if name == "" {
+		return nil
+	}
+
 	ret := &FileCollection{}
 	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {

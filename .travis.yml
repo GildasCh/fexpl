@@ -5,3 +5,4 @@ install:
   - go get github.com/GildasCh/fcomp
   - go get gopkg.in/h2non/filetype.v1
   - go get github.com/stretchr/testify/assert
+  - go get github.com/gorilla/mux
