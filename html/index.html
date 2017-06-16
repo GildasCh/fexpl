@@ -12,9 +12,15 @@
 
     <table>
       {{ range $f := $fc.Files }}
-      <tr>
-        <td>{{ $f.Name }}</td><td style='text-align:right'>{{ size $f.Size }}</td><td>{{ $f.Header.MIME.Value }}</td>
+      {{ if eq $f.MIME "dir" }}
+      <tr class='dir'>
+        <td>{{ $f.Name }}</td><td></td><td></td>
       </tr>
+      {{ else }}
+      <tr>
+        <td>{{ $f.Name }}</td><td style='text-align:right'>{{ size $f.Size }}</td><td>{{ $f.MIME }}</td>
+      </tr>
+      {{ end }}
       {{ end }}
     </ul>
     {{ end }}

@@ -64,7 +64,7 @@ func ls() {
 
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 0, ' ', 0)
 	for _, f := range fc.Files {
-		kind := f.Header.MIME.Value
+		kind := f.MIME
 		if kind == "" {
 			kind = "unknown"
 		}

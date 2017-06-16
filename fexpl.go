@@ -8,7 +8,6 @@ import (
 	"time"
 
 	filetype "gopkg.in/h2non/filetype.v1"
-	filetypes "gopkg.in/h2non/filetype.v1/types"
 
 	"github.com/GildasCh/fcomp"
 )
@@ -18,7 +17,7 @@ type File struct {
 	Hash     string
 	Size     int64
 	Modified time.Time
-	Header   filetypes.Type
+	MIME     string
 }
 
 type FileCollection struct {
@@ -44,6 +43,11 @@ func Explore(name, root string) *FileCollection {
 	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
+			ret.Files = append(ret.Files, File{
+				Name:     path,
+				Modified: info.ModTime(),
+				MIME:     "dir",
+			})
 			return nil
 		}
 		file, _ := os.Open(path)
@@ -55,7 +59,7 @@ func Explore(name, root string) *FileCollection {
 			Hash:     hash,
 			Size:     info.Size(),
 			Modified: info.ModTime(),
-			Header:   ft,
+			MIME:     ft.MIME.Value,
 		})
 		return nil
 	})
