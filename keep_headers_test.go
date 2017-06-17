@@ -31,7 +31,7 @@ func (dr *DummyReader) Read(p []byte) (int, error) {
 
 func TestKeepHeaders(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
-	in := randomArray(rand.Intn(10 * headersSize))
+	in := randomArray(headersSize + rand.Intn(10*headersSize))
 	var out []byte
 	dr := &DummyReader{b: in}
 	kh := &KeepHeaders{r: dr}
