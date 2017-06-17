@@ -5,14 +5,13 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/gorilla/mux"
 )
 
-var fileCollections map[string]*FileCollection
+var data *Data
 
 func main() {
 	if len(os.Args) < 2 {
@@ -76,18 +75,7 @@ func ls() {
 }
 
 func serve() {
-	fileCollections = make(map[string]*FileCollection)
-
-	for _, root := range os.Args[2:] {
-		fc := Explore("", root)
-		if _, ok := fileCollections[fc.Name]; ok {
-			fmt.Printf("Warning: duplicate collection name %q\n", fc.Name)
-			continue
-		}
-		if fc != nil {
-			fileCollections[fc.Name] = fc
-		}
-	}
+	data = DataFromJSON(os.Args[2:])
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")
@@ -126,7 +114,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = t.Execute(w, fileCollections)
+	err = t.Execute(w, data)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -136,17 +124,19 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("pathHandler", mux.Vars(r))
 
 	collection := mux.Vars(r)["collection"]
-	fc, ok := fileCollections[collection]
+	fc, ok := data.Collections[collection]
 	if !ok {
-		fmt.Printf("%q not found\n", collection)
+		fmt.Printf("%q not found, has %v\n", collection, data.Collections)
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	path := mux.Vars(r)["path"]
 	if path != "" {
-		fc, ok = extractPath(fc, collection, path)
+		fc, ok = extractPath(fc, path)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 	}
 
@@ -154,23 +144,26 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = t.Execute(w, map[string]*FileCollection{collection: fc})
+	err = t.Execute(w, struct{ Collections map[string]*Collection }{map[string]*Collection{collection: fc}})
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func extractPath(in *FileCollection, collection, path string) (ret *FileCollection, ok bool) {
-	ret = &FileCollection{}
+func extractPath(in *Collection, path string) (ret *Collection, ok bool) {
+	ret = &Collection{}
 	ret.Name = in.Name
+	ok = false
 	for _, inf := range in.Files {
-		if !strings.HasPrefix(inf.Name, filepath.Join(collection, path)) {
+		if !strings.HasPrefix(strings.TrimLeft(inf.Name, "/"), path) {
+			fmt.Printf("Filtering out %q (path %q)\n", strings.TrimLeft(inf.Name, "/"), path)
 			continue
 		}
 		ok = true
 		ret.Files = append(ret.Files, inf)
 	}
 
-	ok = false
+	fmt.Println("Output dataset is empty")
+
 	return
 }

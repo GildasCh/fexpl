@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    {{ range $c, $fc := . }}
+    {{ range $c, $fc := .Collections }}
     <h2>{{ $fc.Name }}</h2>
 
     <table>
       {{ range $f := $fc.Files }}
       {{ if eq $f.MIME "dir" }}
       <tr class='dir'>
-        <td><a href='/browse/{{ $f.Name }}'>{{ $f.Name }}</a></td><td></td><td></td>
+        <td><a href='/browse/{{$fc.Name}}/{{ $f.Name }}'>{{ $f.Name }}</a></td><td></td><td></td>
       </tr>
       {{ else }}
       <tr>

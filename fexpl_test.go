@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var fc *FileCollection
+var fc *Collection
 
 func TestExplore(t *testing.T) {
 	if fc == nil {
@@ -16,7 +16,7 @@ func TestExplore(t *testing.T) {
 	}
 
 	assert.Equal(t, "dummy name", fc.Name)
-	assert.Equal(t, 15, len(fc.Files))
+	assert.Equal(t, 18, len(fc.Files))
 
 	// Check that hashes of a copy is the same
 	var h1, h2 string
@@ -57,7 +57,7 @@ func TestExploreDataExists(t *testing.T) {
 
 func TestExploreErrorOnNoNameAndNoData(t *testing.T) {
 	fc2 := Explore("", "data")
-	assert.EqualValues(t, (*FileCollection)(nil), fc2)
+	assert.EqualValues(t, (*Collection)(nil), fc2)
 }
 
 func TestExportAndImport(t *testing.T) {

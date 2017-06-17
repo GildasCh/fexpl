@@ -13,21 +13,27 @@ import (
 )
 
 type File struct {
-	Name     string
-	Hash     string
-	Size     int64
-	Modified time.Time
-	MIME     string
+	Name       string
+	Hash       string
+	Size       int64
+	Modified   time.Time
+	MIME       string
+	collection *Collection
 }
 
-type FileCollection struct {
-	Files []File
+type Collection struct {
+	Files []*File
 	Name  string
 }
 
-func Explore(name, root string) *FileCollection {
+type Data struct {
+	Collections map[string]*Collection // collection name to collection
+	Files       map[string][]*File     // hash to file
+}
+
+func Explore(name, root string) *Collection {
 	if _, err := os.Stat(filepath.Join(root, "fexpl.json")); err == nil {
-		// File exists
+		fmt.Printf("File exists on root %q\n", root)
 		ret, err := ImportFromJSON(filepath.Join(root, "fexpl.json"))
 		if err == nil {
 			return ret
@@ -39,35 +45,32 @@ func Explore(name, root string) *FileCollection {
 		return nil
 	}
 
-	ret := &FileCollection{}
+	ret := &Collection{}
 	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			ret.Files = append(ret.Files, File{
-				Name:     path,
-				Modified: info.ModTime(),
-				MIME:     "dir",
-			})
-			return nil
+		f := &File{
+			Name:       path,
+			Size:       info.Size(),
+			Modified:   info.ModTime(),
+			MIME:       "dir",
+			collection: ret,
 		}
-		file, _ := os.Open(path)
-		kh := &KeepHeaders{r: file}
-		hash := fcomp.Hash(kh)
-		ft, _ := filetype.Get(kh.headers[:])
-		ret.Files = append(ret.Files, File{
-			Name:     path,
-			Hash:     hash,
-			Size:     info.Size(),
-			Modified: info.ModTime(),
-			MIME:     ft.MIME.Value,
-		})
+		if !info.IsDir() {
+			file, _ := os.Open(path)
+			kh := &KeepHeaders{r: file}
+			hash := fcomp.Hash(kh)
+			ft, _ := filetype.Get(kh.headers[:])
+			f.Hash = hash
+			f.MIME = ft.MIME.Value
+		}
+		ret.Files = append(ret.Files, f)
 		return nil
 	})
 
 	return ret
 }
 
-func (fc *FileCollection) ExportToJSON(output string) error {
+func (fc *Collection) ExportToJSON(output string) error {
 	f, err := os.Create(output)
 	if err != nil {
 		return err
@@ -76,13 +79,48 @@ func (fc *FileCollection) ExportToJSON(output string) error {
 	return json.NewEncoder(f).Encode(fc)
 }
 
-func ImportFromJSON(output string) (*FileCollection, error) {
+func ImportFromJSON(output string) (*Collection, error) {
 	f, err := os.Open(output)
 	if err != nil {
 		return nil, err
 	}
 
-	var fc FileCollection
+	var fc Collection
 	err = json.NewDecoder(f).Decode(&fc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create links to parent Collection
+	for _, file := range fc.Files {
+		file.collection = &fc
+	}
+
 	return &fc, err
+}
+
+func DataFromJSON(paths []string) *Data {
+	ret := &Data{}
+	ret.Collections = make(map[string]*Collection)
+	ret.Files = make(map[string][]*File)
+	for _, p := range paths {
+		c, err := ImportFromJSON(p)
+		if err != nil {
+			fmt.Printf("Error loading data from %q\n", p)
+			continue
+		}
+		if _, ok := ret.Collections[c.Name]; ok {
+			fmt.Printf("Could not import %q, collection %q already loaded\n", p, c.Name)
+			continue
+		}
+		ret.Collections[c.Name] = c
+
+		for _, f := range c.Files {
+			ret.Files[f.Hash] = append(ret.Files[f.Hash], f)
+		}
+
+		fmt.Printf("Imported %d files from %q\n", len(c.Files), p)
+	}
+
+	return ret
 }
