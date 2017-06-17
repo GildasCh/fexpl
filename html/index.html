@@ -4,17 +4,17 @@
 	<title>fexpl</title>
 	<meta charset="utf-8" />
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    {{ range $fc := . }}
+    {{ range $c, $fc := . }}
     <h2>{{ $fc.Name }}</h2>
 
     <table>
       {{ range $f := $fc.Files }}
       {{ if eq $f.MIME "dir" }}
       <tr class='dir'>
-        <td>{{ $f.Name }}</td><td></td><td></td>
+        <td><a href='/browse/{{ $f.Name }}'>{{ $f.Name }}</a></td><td></td><td></td>
       </tr>
       {{ else }}
       <tr>
@@ -22,7 +22,8 @@
       </tr>
       {{ end }}
       {{ end }}
-    </ul>
+    </table>
+
     {{ end }}
   </body>
 </html>
