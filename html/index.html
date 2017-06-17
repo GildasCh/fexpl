@@ -21,8 +21,8 @@
       {{ else }}
       <tr>
         <td>{{ $f.Name }}</td>
-        <td>{{ duplicates $f.Hash }}</td>
-        <td style='text-align:right'>{{ size $f.Size }}</td>
+        <td>{{ duplicates $f }}</td>
+        <td style='text-align:right'>{{ $f.FormatSize }}</td>
         <td>{{ $f.MIME }}</td>
       </tr>
       {{ end }}

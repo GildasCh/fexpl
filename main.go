@@ -95,21 +95,8 @@ func serve() {
 }
 
 var funcMap = template.FuncMap{
-	"size": func(size int64) string {
-		units := []string{"", "K", "M", "G", "T"}
-		unit := 0
-		fsize := float64(size)
-		for fsize > 1024 {
-			fsize /= 1024
-			unit++
-			if unit == len(units)-1 {
-				break
-			}
-		}
-		return fmt.Sprintf("%.2f%s", fsize, units[unit])
-	},
-	"duplicates": func(hash string) string {
-		matching := data.Files[hash]
+	"duplicates": func(f *File) string {
+		matching := f.Duplicates()
 		where := ""
 		for _, m := range matching {
 			where += m.collection.Name + ", "
