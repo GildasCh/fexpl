@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
+    {{ $numberOfCollections := len .Collections }}
     {{ range $c, $fc := .Collections }}
-    <h2>{{ $fc.Name }}</h2>
+    <h2><a href='/browse/{{$fc.Name}}/'>{{ $fc.Name }}</a></h2>
 
+    {{ if le $numberOfCollections 1 }}
     <table>
       {{ range $f := $fc.Files }}
       {{ if eq $f.MIME "dir" }}
@@ -23,6 +25,7 @@
       {{ end }}
       {{ end }}
     </table>
+    {{ end }}
 
     {{ end }}
   </body>

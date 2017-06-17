@@ -42,7 +42,7 @@ func scan() {
 		return
 	}
 
-	fc := Explore(os.Args[2], os.Args[3])
+	fc := Explore(os.Args[2], os.Args[3], false)
 
 	err := fc.ExportToJSON(os.Args[4])
 	if err != nil {

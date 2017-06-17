@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	filetype "gopkg.in/h2non/filetype.v1"
@@ -31,7 +32,7 @@ type Data struct {
 	Files       map[string][]*File     // hash to file
 }
 
-func Explore(name, root string) *Collection {
+func Explore(name, root string, hidden bool) *Collection {
 	if _, err := os.Stat(filepath.Join(root, "fexpl.json")); err == nil {
 		fmt.Printf("File exists on root %q\n", root)
 		ret, err := ImportFromJSON(filepath.Join(root, "fexpl.json"))
@@ -45,9 +46,35 @@ func Explore(name, root string) *Collection {
 		return nil
 	}
 
+	counterChan := make(chan string, 100)
+	go func() {
+		counter := 0
+		last := "none"
+		timeChan := time.After(time.Second)
+		fmt.Println()
+		for {
+			select {
+			case <-timeChan:
+				fmt.Printf("\rWalking over %d files, last was %s", counter, last)
+				timeChan = time.After(100 * time.Millisecond)
+			case name := <-counterChan:
+				if name == "" {
+					fmt.Println()
+					return
+				}
+				counter++
+				last = name
+			}
+		}
+	}()
+
 	ret := &Collection{}
 	ret.Name = name
 	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !hidden && strings.Contains(path, "/.") {
+			return nil // skip hidden file
+		}
+		counterChan <- path
 		f := &File{
 			Name:       path,
 			Size:       info.Size(),
@@ -66,6 +93,7 @@ func Explore(name, root string) *Collection {
 		ret.Files = append(ret.Files, f)
 		return nil
 	})
+	counterChan <- ""
 
 	return ret
 }
