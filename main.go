@@ -91,7 +91,7 @@ func serve() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")
-	r.HandleFunc("/browse/{collection:[a-zA-Z0-9 _-]+}/{path:[a-zA-Z0-9 _-]*}", pathHandler).Methods("GET")
+	r.HandleFunc("/browse/{collection:[a-zA-Z0-9 _-]+}/{path:.*}", pathHandler).Methods("GET")
 	r.HandleFunc("/browse/{collection:[a-zA-Z0-9 _-]+}", pathHandler).Methods("GET")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
