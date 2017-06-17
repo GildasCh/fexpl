@@ -77,6 +77,8 @@ func ls() {
 func serve() {
 	data = DataFromJSON(os.Args[2:])
 
+	fmt.Println(data.Files["3KrlE+DuPPWnw8sDmRHzbP4gvJ+XqDUy3eiT8eKMFLyaclIkgDUYa6kZK+tS9KExzBRZ7eGmOl/dF5uA4ml6lg=="])
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")
 	r.HandleFunc("/browse/{collection:[a-zA-Z0-9 _-]+}/{path:.*}", pathHandler).Methods("GET")
@@ -105,6 +107,15 @@ var funcMap = template.FuncMap{
 			}
 		}
 		return fmt.Sprintf("%.2f%s", fsize, units[unit])
+	},
+	"duplicates": func(hash string) string {
+		matching := data.Files[hash]
+		where := ""
+		for _, m := range matching {
+			where += m.collection.Name + ", "
+		}
+		where = strings.Trim(where, ", ")
+		return fmt.Sprintf("%d (%s)", len(matching), where)
 	}}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +155,7 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = t.Execute(w, struct{ Collections map[string]*Collection }{map[string]*Collection{collection: fc}})
+	err = t.Execute(w, Data{Collections: map[string]*Collection{fc.Name: fc}, Files: data.Files})
 	if err != nil {
 		fmt.Println(err)
 	}
