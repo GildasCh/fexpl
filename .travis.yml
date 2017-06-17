@@ -1,6 +1,10 @@
 language: go
-script: go test -v
-
+go:
+  - tip
+before_install:
+  - go get github.com/mattn/goveralls
+script:
+  - $HOME/gopath/bin/goveralls -service=travis-ci
 install:
   - go get github.com/GildasCh/fcomp
   - go get gopkg.in/h2non/filetype.v1
