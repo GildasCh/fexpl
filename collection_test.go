@@ -12,7 +12,7 @@ var fc *Collection
 
 func TestExplore(t *testing.T) {
 	if fc == nil {
-		fc = Explore("dummy name", "data", false)
+		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
 
 	assert.Equal(t, "dummy name", fc.Name)
@@ -34,7 +34,7 @@ func TestExplore(t *testing.T) {
 
 func TestExploreDataExists(t *testing.T) {
 	if fc == nil {
-		fc = Explore("dummy name", "data", false)
+		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
 
 	fc.ExportToJSON("data/fexpl.json")
@@ -45,7 +45,7 @@ func TestExploreDataExists(t *testing.T) {
 		}
 	}()
 
-	fc2 := Explore("", "data", false)
+	fc2 := Explore("", "data", false, 50*1024*1024)
 	for i := range fc.Files {
 		fc.Files[i].Modified = fc.Files[i].Modified.UTC()
 	}
@@ -56,13 +56,13 @@ func TestExploreDataExists(t *testing.T) {
 }
 
 func TestExploreErrorOnNoNameAndNoData(t *testing.T) {
-	fc2 := Explore("", "data", false)
+	fc2 := Explore("", "data", false, 50*1024*1024)
 	assert.EqualValues(t, (*Collection)(nil), fc2)
 }
 
 func TestExportAndImport(t *testing.T) {
 	if fc == nil {
-		fc = Explore("dummy name", "data", false)
+		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
 
 	err := fc.ExportToJSON("dummy.json")

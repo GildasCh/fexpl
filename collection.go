@@ -18,7 +18,7 @@ type Collection struct {
 	Name  string
 }
 
-func Explore(name, root string, hidden bool) *Collection {
+func Explore(name, root string, hidden bool, maxSize int64) *Collection {
 	if _, err := os.Stat(filepath.Join(root, "fexpl.json")); err == nil {
 		fmt.Printf("File exists on root %q\n", root)
 		ret, err := ImportFromJSON(filepath.Join(root, "fexpl.json"))
@@ -69,12 +69,20 @@ func Explore(name, root string, hidden bool) *Collection {
 			collection: ret,
 		}
 		if !info.IsDir() {
-			file, _ := os.Open(path)
-			kh := &KeepHeaders{r: file}
-			hash := fcomp.Hash(kh)
-			ft, _ := filetype.Get(kh.headers[:])
-			f.Hash = hash
-			f.MIME = ft.MIME.Value
+			if info.Size() <= maxSize {
+				file, _ := os.Open(path)
+				kh := &KeepHeaders{r: file}
+				hash := fcomp.Hash(kh)
+				ft, _ := filetype.Get(kh.headers[:])
+				f.Hash = hash
+				f.MIME = ft.MIME.Value
+			} else {
+				file, _ := os.Open(path)
+				buf := make([]byte, 261)
+				file.Read(buf)
+				ft, _ := filetype.Get(buf[:261])
+				f.MIME = ft.MIME.Value
+			}
 		}
 		ret.Files = append(ret.Files, f)
 		return nil
