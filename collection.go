@@ -101,8 +101,8 @@ func (fc *Collection) ExportToJSON(output string) error {
 	return json.NewEncoder(f).Encode(fc)
 }
 
-func ImportFromJSON(output string) (*Collection, error) {
-	f, err := os.Open(output)
+func ImportFromJSON(input string) (*Collection, error) {
+	f, err := os.Open(input)
 	if err != nil {
 		return nil, err
 	}
