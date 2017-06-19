@@ -24,6 +24,9 @@ func DataFromJSON(paths []string) *Data {
 		ret.Collections[c.Name] = c
 
 		for _, f := range c.Files {
+			if f.Hash == "" {
+				continue
+			}
 			ret.Files[f.Hash] = append(ret.Files[f.Hash], f)
 		}
 

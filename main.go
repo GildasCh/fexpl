@@ -98,6 +98,9 @@ func serve() {
 var funcMap = template.FuncMap{
 	"duplicates": func(f *File) string {
 		matching := f.Duplicates()
+		if len(matching) <= 0 {
+			return ""
+		}
 		where := ""
 		for _, m := range matching {
 			where += m.collection.Name + ", "
