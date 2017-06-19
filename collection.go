@@ -69,19 +69,28 @@ func Explore(name, root string, hidden bool, maxSize int64) *Collection {
 			collection: ret,
 		}
 		if !info.IsDir() {
+			var kh *KeepHeaders
+
+			// Hash calculation
 			if info.Size() <= maxSize {
 				file, _ := os.Open(path)
-				kh := &KeepHeaders{r: file}
+				kh = &KeepHeaders{r: file}
 				hash := fcomp.Hash(kh)
-				ft, _ := filetype.Get(kh.headers[:])
 				f.Hash = hash
-				f.MIME = ft.MIME.Value
-			} else {
-				file, _ := os.Open(path)
-				buf := make([]byte, 261)
-				file.Read(buf)
-				ft, _ := filetype.Get(buf[:261])
-				f.MIME = ft.MIME.Value
+			}
+
+			// Extract file type from header
+			if info.Size() > 261 {
+				if kh != nil {
+					ft, _ := filetype.Get(kh.headers[:])
+					f.MIME = ft.MIME.Value
+				} else {
+					file, _ := os.Open(path)
+					buf := make([]byte, 261)
+					file.Read(buf)
+					ft, _ := filetype.Get(buf[:261])
+					f.MIME = ft.MIME.Value
+				}
 			}
 		}
 		ret.Files = append(ret.Files, f)
