@@ -11,6 +11,8 @@ import (
 var fc *Collection
 
 func TestExplore(t *testing.T) {
+	importr = &JSONImporter{}
+
 	if fc == nil {
 		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
@@ -33,6 +35,8 @@ func TestExplore(t *testing.T) {
 }
 
 func TestExploreDataExists(t *testing.T) {
+	importr = &JSONImporter{}
+
 	if fc == nil {
 		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
@@ -61,13 +65,15 @@ func TestExploreErrorOnNoNameAndNoData(t *testing.T) {
 }
 
 func TestExportAndImport(t *testing.T) {
+	importr = &JSONImporter{}
+
 	if fc == nil {
 		fc = Explore("dummy name", "data", false, 50*1024*1024)
 	}
 
 	err := fc.ExportToJSON("dummy.json")
 	assert.NoError(t, err)
-	fc2, err := ImportFromJSON("dummy.json")
+	fc2, err := (&JSONImporter{}).Import("dummy.json")
 	assert.NoError(t, err)
 
 	// fix bug on time.Time.loc

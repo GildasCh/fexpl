@@ -7,7 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var importFunc func(input string) (*Collection, error)
+
+type ImporterStub struct{}
+
+func (is *ImporterStub) Import(input string) (*Collection, error) {
+	return importFunc(input)
+}
+
 func TestDataFromJSON(t *testing.T) {
+	importr = &ImporterStub{}
+
 	expected := map[string]*Collection{
 		"A": &Collection{nil, "A"},
 		"B": &Collection{nil, "B"},
@@ -27,6 +37,8 @@ func TestDataFromJSON(t *testing.T) {
 }
 
 func TestDataFromJSONImportError(t *testing.T) {
+	importr = &ImporterStub{}
+
 	importFunc = func(input string) (*Collection, error) {
 		return nil, fmt.Errorf("dummy error")
 	}
@@ -38,6 +50,8 @@ func TestDataFromJSONImportError(t *testing.T) {
 }
 
 func TestDataFromJSONDuplicateCollectionNameKeepFirst(t *testing.T) {
+	importr = &ImporterStub{}
+
 	expected := map[string]*Collection{
 		"A": &Collection{[]*File{&File{Name: "dummy file 1", Hash: "123"}}, "A"},
 		"B": &Collection{nil, "B"},

@@ -21,7 +21,7 @@ type Collection struct {
 func Explore(name, root string, hidden bool, maxSize int64) *Collection {
 	if _, err := os.Stat(filepath.Join(root, "fexpl.json")); err == nil {
 		fmt.Printf("File exists on root %q\n", root)
-		ret, err := ImportFromJSON(filepath.Join(root, "fexpl.json"))
+		ret, err := importr.Import(filepath.Join(root, "fexpl.json"))
 		if err == nil {
 			return ret
 		}
@@ -99,24 +99,4 @@ func (fc *Collection) ExportToJSON(output string) error {
 	}
 
 	return json.NewEncoder(f).Encode(fc)
-}
-
-func ImportFromJSON(input string) (*Collection, error) {
-	f, err := os.Open(input)
-	if err != nil {
-		return nil, err
-	}
-
-	var fc Collection
-	err = json.NewDecoder(f).Decode(&fc)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create links to parent Collection
-	for _, file := range fc.Files {
-		file.collection = &fc
-	}
-
-	return &fc, err
 }

@@ -12,6 +12,7 @@ import (
 )
 
 var data *Data
+var importr Importer = &JSONImporter{}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -58,7 +59,7 @@ func ls() {
 		return
 	}
 
-	fc, err := ImportFromJSON(os.Args[2])
+	fc, err := importr.Import(os.Args[2])
 	if err != nil {
 		fmt.Println(err)
 	}

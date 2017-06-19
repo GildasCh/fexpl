@@ -7,14 +7,12 @@ type Data struct {
 	Files       map[string][]*File     // hash to file
 }
 
-var importFunc = ImportFromJSON
-
 func DataFromJSON(paths []string) *Data {
 	ret := &Data{}
 	ret.Collections = make(map[string]*Collection)
 	ret.Files = make(map[string][]*File)
 	for _, p := range paths {
-		c, err := importFunc(p)
+		c, err := importr.Import(p)
 		if err != nil {
 			fmt.Printf("Error loading data from %q\n", p)
 			continue
