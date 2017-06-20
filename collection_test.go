@@ -14,7 +14,7 @@ func TestExplore(t *testing.T) {
 	importr = &JSONImporter{}
 
 	if fc == nil {
-		fc = Explore("dummy name", "data", false, 50*1024*1024)
+		fc = Explore("dummy name", "data", false, 5*1024*1024)
 	}
 
 	assert.Equal(t, "dummy name", fc.Name)
