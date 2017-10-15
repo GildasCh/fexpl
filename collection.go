@@ -10,7 +10,7 @@ import (
 
 	filetype "gopkg.in/h2non/filetype.v1"
 
-	"github.com/GildasCh/fcomp"
+	"github.com/gildasch/fcomp"
 )
 
 type Collection struct {
